@@ -58,7 +58,7 @@ table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:7px 5px;b
 <div><label>Type</label><select id="filter" onchange="render()"><option>ALL</option><option>REFER</option><option>CVD</option><option>HPHT</option></select></div>
 </div>
 <div style="height:8px"></div>
-<div class="row"><button class="secondary" onclick="exportCSV()">⬇️ Excel/CSV</button><button class="secondary" onclick="backup()">💾 Backup</button></div>
+<div class="row"><button class="secondary" onclick="exportExcel()">⬇️ Excel (Columns)</button><button class="secondary" onclick="exportCSV()">CSV</button><button class="secondary" onclick="backup()">💾 Backup</button></div>
 </section>
 
 <section class="card"><h3 style="margin:0 0 8px">📋 Saved Records</h3>
@@ -98,11 +98,18 @@ function render(){
  renderVendors();
 }
 function removeRec(id){if(confirm('Delete this record?')){records=records.filter(r=>r.id!==id);localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));render()}}
+function exportExcel(){
+ if(!records.length){alert('No data to export');return}
+ const rows=[['Date','Vendor','PO Number','Barcode','Rejection Type'],...records.map(r=>[r.date,r.vendor,r.po,r.barcode,r.type])];
+ const clean=v=>String(v??'').replace(/[\t\r\n]/g,' ');
+ const tsv=rows.map(r=>r.map(clean).join('\t')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\ufeff"+tsv],{type:'text/tab-separated-values;charset=utf-8'}));a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.tsv';a.click();
+}
 function exportCSV(){
  if(!records.length){alert('No data to export');return}
  const rows=[['Date','Vendor','PO Number','Barcode','Rejection Type'],...records.map(r=>[r.date,r.vendor,r.po,r.barcode,r.type])];
- const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\\ufeff"+csv],{type:'text/csv;charset=utf-8'}));a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+ const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'}));a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
 function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(records,null,2)],{type:'application/json'}));a.download='diamond_rejection_backup.json';a.click()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
