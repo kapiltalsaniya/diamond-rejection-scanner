@@ -101,9 +101,10 @@ function removeRec(id){if(confirm('Delete this record?')){records=records.filter
 function exportExcel(){
  if(!records.length){alert('No data to export');return}
  const rows=[['Date','Vendor','PO Number','Barcode','Rejection Type'],...records.map(r=>[r.date,r.vendor,r.po,r.barcode,r.type])];
- const clean=v=>String(v??'').replace(/[\t\r\n]/g,' ');
- const tsv=rows.map(r=>r.map(clean).join('\t')).join('\r\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\ufeff"+tsv],{type:'text/tab-separated-values;charset=utf-8'}));a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.tsv';a.click();
+ const escX=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');
+ const table='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px;text-align:left}th{font-weight:bold;background:#e8eef7}td{mso-number-format:"\@"}</style></head><body><table>'+rows.map((r,i)=>'<tr>'+r.map(v=>(i===0?'<th>':'<td>')+escX(v)+(i===0?'</th>':'</td>')).join('')+'</tr>').join('')+'</table></body></html>';
+ const blob=new Blob(['\ufeff'+table],{type:'application/vnd.ms-excel'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function exportCSV(){
  if(!records.length){alert('No data to export');return}
