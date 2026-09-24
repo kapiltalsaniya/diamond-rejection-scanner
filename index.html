@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Diamond Rejection Scanner</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111827;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:#111827;color:#fff;padding:16px;position:sticky;top:0;z-index:10}h1{margin:0;font-size:21px}.sub{font-size:11px;opacity:.75}
+main{max-width:760px;margin:auto;padding:12px}.card{background:#fff;border-radius:16px;padding:13px;margin-bottom:12px;box-shadow:0 1px 5px #0001}
+label{display:block;font-size:11px;font-weight:700;color:#4b5563;margin:8px 0 4px}input,select,button{font:inherit}input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+button{border:0;border-radius:10px;padding:11px 12px;font-weight:700}.primary{background:#111827;color:#fff}.secondary{background:#e5e7eb}.danger{background:#fee2e2;color:#991b1b}
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.types button{background:#e5e7eb}.types button.sel{background:#111827;color:#fff}
+#scannerBox{display:none;position:relative;background:#000;border-radius:14px;overflow:hidden;margin-top:10px}#video{width:100%;height:300px;object-fit:cover;display:block}
+.scanLine{position:absolute;left:10%;right:10%;top:50%;height:2px;background:#fff;box-shadow:0 0 8px #fff}
+.scanControls{position:absolute;bottom:10px;left:10px;right:10px;display:flex;gap:8px}.scanControls button{background:#fff}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.stat{background:#fff;border-radius:12px;padding:9px;text-align:center}.stat b{display:block;font-size:19px}.stat span{font-size:9px;color:#6b7280}
+table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:7px 5px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}th{font-size:10px;color:#6b7280}.scroll{overflow:auto}.empty{text-align:center;padding:18px;color:#6b7280}
+.badge{padding:3px 6px;border-radius:999px;background:#e5e7eb;font-size:10px}.notice{font-size:11px;color:#6b7280;line-height:1.4}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><h1>💎 Diamond Rejection Scanner</h1><div class="sub">Phone camera → Barcode → REFER / CVD / HPHT → Save</div></header>
+<main>
+<div class="stats"><div class="stat"><b id="total">0</b><span>Total</span></div><div class="stat"><b id="refer">0</b><span>REFER</span></div><div class="stat"><b id="cvd">0</b><span>CVD</span></div><div class="stat"><b id="hpht">0</b><span>HPHT</span></div></div>
+
+<section class="card">
+<h3 style="margin:0 0 10px">1. Product Details</h3>
+<div class="grid">
+<div><label>Vendor Name</label><input id="vendor" list="vendors" placeholder="Vendor name"><datalist id="vendors"></datalist></div>
+<div><label>PO Number</label><input id="po" placeholder="PO number"></div>
+<div><label>Barcode</label><input id="barcode" inputmode="numeric" autocomplete="off" placeholder="Scan barcode"></div>
+<div><label>Date</label><input id="date" type="date"></div>
+</div>
+<div style="height:8px"></div>
+<button class="primary" style="width:100%;font-size:16px" onclick="openScanner()">📷 Scan with Phone Camera</button>
+<div id="scannerBox">
+<video id="video" playsinline muted></video><div class="scanLine"></div>
+<div class="scanControls"><button onclick="toggleTorch()">🔦 Torch</button><button onclick="closeScanner()">✖ Close</button></div>
+</div>
+<p class="notice">Camera scan ke liye app ko HTTPS website/PWA ke roop me open karna zaroori hai. Android me permission aaye to <b>Allow</b> karein.</p>
+</section>
+
+<section class="card">
+<h3 style="margin:0 0 9px">2. Rejection Type</h3>
+<div class="types"><button id="referBtn" onclick="pick('REFER')">REFER</button><button id="cvdBtn" onclick="pick('CVD')">CVD</button><button id="hphtBtn" onclick="pick('HPHT')">HPHT</button></div>
+<div style="height:9px"></div><button class="primary" style="width:100%" onclick="save()">💾 Save Rejection</button>
+</section>
+
+<section class="card">
+<h3 style="margin:0 0 8px">📊 Search / Export</h3>
+<div class="grid">
+<div><label>Search Vendor / PO / Barcode</label><input id="search" oninput="render()" placeholder="Search"></div>
+<div><label>Type</label><select id="filter" onchange="render()"><option>ALL</option><option>REFER</option><option>CVD</option><option>HPHT</option></select></div>
+</div>
+<div style="height:8px"></div>
+<div class="row"><button class="secondary" onclick="exportCSV()">⬇️ Excel/CSV</button><button class="secondary" onclick="backup()">💾 Backup</button></div>
+</section>
+
+<section class="card"><h3 style="margin:0 0 8px">📋 Saved Records</h3>
+<div class="scroll"><table><thead><tr><th>Date</th><th>Vendor</th><th>PO</th><th>Barcode</th><th>Type</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></section>
+</main>
+<script>
+let records=JSON.parse(localStorage.getItem('diamondRejectionCamera')||'[]');
+let selected='',stream=null,track=null,detector=null,scanBusy=false,torch=false;
+const $=id=>document.getElementById(id); $('date').value=new Date().toISOString().slice(0,10);
+
+function pick(t){selected=t;['REFER','CVD','HPHT'].forEach(x=>$(x==='REFER'?'referBtn':x==='CVD'?'cvdBtn':'hphtBtn').classList.remove('sel'));$(t==='REFER'?'referBtn':t==='CVD'?'cvdBtn':'hphtBtn').classList.add('sel')}
+function save(){
+ const vendor=$('vendor').value.trim(),po=$('po').value.trim(),barcode=$('barcode').value.trim(),date=$('date').value;
+ if(!vendor||!po||!barcode||!date||!selected){alert('Vendor, PO, Barcode, Date aur Rejection Type complete karo.');return}
+ const dup=records.some(r=>r.vendor.toLowerCase()===vendor.toLowerCase()&&r.po===po&&r.barcode===barcode);
+ if(dup&&!confirm('Same Vendor + PO + Barcode already saved hai. Phir bhi save karein?'))return;
+ records.push({id:Date.now(),date,vendor,po,barcode,type:selected});
+ localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));
+ $('barcode').value='';pickClear();render();
+}
+function pickClear(){selected='';['referBtn','cvdBtn','hphtBtn'].forEach(id=>$(id).classList.remove('sel'))}
+function render(){
+ const q=$('search').value.toLowerCase().trim(),f=$('filter').value;
+ const a=records.filter(r=>(!q||[r.vendor,r.po,r.barcode,r.type].some(v=>String(v).toLowerCase().includes(q)))&&(f==='ALL'||r.type===f));
+ let c={REFER:0,CVD:0,HPHT:0};a.forEach(r=>c[r.type]++);
+ $('total').textContent=a.length;$('refer').textContent=c.REFER;$('cvd').textContent=c.CVD;$('hpht').textContent=c.HPHT;
+ $('rows').innerHTML=a.slice().reverse().map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.vendor)}</td><td>${esc(r.po)}</td><td>${esc(r.barcode)}</td><td><span class="badge">${r.type}</span></td><td><button class="danger" onclick="removeRec(${r.id})">✕</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No records</td></tr>';
+ $('vendors').innerHTML=[...new Set(records.map(r=>r.vendor))].sort().map(v=>`<option value="${esc(v)}">`).join('');
+}
+function removeRec(id){if(confirm('Delete this record?')){records=records.filter(r=>r.id!==id);localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));render()}}
+function exportCSV(){
+ if(!records.length){alert('No data to export');return}
+ const rows=[['Date','Vendor','PO Number','Barcode','Rejection Type'],...records.map(r=>[r.date,r.vendor,r.po,r.barcode,r.type])];
+ const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\\ufeff"+csv],{type:'text/csv;charset=utf-8'}));a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(records,null,2)],{type:'application/json'}));a.download='diamond_rejection_backup.json';a.click()}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+async function openScanner(){
+ if(!window.isSecureContext){alert('Camera ke liye HTTPS zaroori hai. Is file ko direct phone storage se open na karein.');return}
+ if(!navigator.mediaDevices?.getUserMedia){alert('Is browser me camera access available nahi hai.');return}
+ if(!('BarcodeDetector' in window)){alert('Is browser me native barcode detection available nahi hai. Chrome ka latest version try karein.');return}
+ try{
+  detector=new BarcodeDetector({formats:['code_128','code_39','ean_13','ean_8','upc_a','upc_e','qr_code']});
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+  const v=$('video');v.srcObject=stream;$('scannerBox').style.display='block';await v.play();
+  track=stream.getVideoTracks()[0]; scanBusy=false; scanLoop();
+ }catch(e){alert('Camera permission nahi mili. Phone Settings → Chrome → Site settings → Camera → Allow check karein.');closeScanner()}
+}
+async function scanLoop(){
+ if(!stream||scanBusy)return;
+ try{scanBusy=true;const codes=await detector.detect($('video'));if(codes.length){$('barcode').value=codes[0].rawValue;navigator.vibrate?.(120);closeScanner();return}}catch(e){}finally{scanBusy=false}
+ if(stream)requestAnimationFrame(scanLoop);
+}
+async function toggleTorch(){
+ if(!track)return;const caps=track.getCapabilities?.();if(!caps?.torch){alert('Is phone/browser me torch control available nahi hai.');return}
+ torch=!torch;try{await track.applyConstraints({advanced:[{torch}]})}catch(e){torch=!torch}
+}
+function closeScanner(){if(stream){stream.getTracks().forEach(t=>t.stop())}stream=null;track=null;$('video').srcObject=null;$('scannerBox').style.display='none';torch=false}
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+render();
+</script>
+</body></html>
