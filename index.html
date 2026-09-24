@@ -31,7 +31,7 @@ table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:7px 5px;b
 <section class="card">
 <h3 style="margin:0 0 10px">1. Product Details</h3>
 <div class="grid">
-<div><label>Vendor Name</label><input id="vendor" list="vendors" placeholder="Vendor name"><datalist id="vendors"></datalist></div>
+<div><label>Vendor Name</label><input id="vendor" list="vendors" placeholder="Vendor name"><datalist id="vendors"></datalist><div style="display:flex;gap:8px;margin-top:6px"><button type="button" onclick="saveVendor()">＋ Save Vendor</button><button type="button" onclick="manageVendors()">Manage</button></div></div>
 <div><label>PO Number</label><input id="po" placeholder="PO number"></div>
 <div><label>Barcode</label><input id="barcode" inputmode="numeric" autocomplete="off" placeholder="Scan barcode"></div>
 <div><label>Date</label><input id="date" type="date"></div>
@@ -67,7 +67,16 @@ table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:7px 5px;b
 <script>
 let records=JSON.parse(localStorage.getItem('diamondRejectionCamera')||'[]');
 let selected='',stream=null,track=null,detector=null,scanBusy=false,torch=false;
-const $=id=>document.getElementById(id); $('date').value=new Date().toISOString().slice(0,10);
+const $=id=>document.getElementById(id); $('date').value=new Date().toISOString().slice(0,10); renderVendors();
+
+const VKEY='diamondSavedVendors';
+function getVendors(){try{return JSON.parse(localStorage.getItem(VKEY)||'[]')}catch(e){return[]}}
+function setVendors(v){v=[...new Set(v.map(x=>String(x).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));localStorage.setItem(VKEY,JSON.stringify(v));renderVendors()}
+function renderVendors(){const all=[...new Set([...getVendors(),...records.map(r=>r.vendor).filter(Boolean)])].sort((a,b)=>a.localeCompare(b));$('vendors').innerHTML=all.map(v=>`<option value="${esc(v)}">`).join('')}
+function saveVendor(){const v=$('vendor').value.trim();if(!v){alert('Pehle vendor name enter karo.');return}setVendors([...getVendors(),v]);alert('Vendor save ho gaya. Ab dropdown se select kar sakte ho.')}
+function manageVendors(){const v=getVendors();if(!v.length){alert('Koi manually saved vendor nahi hai.');return}const x=prompt('Saved vendors:
+
+'+v.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nDelete karne ke liye exact vendor name enter karo:');if(x&&v.includes(x.trim())){setVendors(v.filter(n=>n!==x.trim()));alert('Vendor delete ho gaya.')}}
 
 function pick(t){selected=t;['REFER','CVD','HPHT'].forEach(x=>$(x==='REFER'?'referBtn':x==='CVD'?'cvdBtn':'hphtBtn').classList.remove('sel'));$(t==='REFER'?'referBtn':t==='CVD'?'cvdBtn':'hphtBtn').classList.add('sel')}
 function save(){
@@ -86,7 +95,7 @@ function render(){
  let c={REFER:0,CVD:0,HPHT:0};a.forEach(r=>c[r.type]++);
  $('total').textContent=a.length;$('refer').textContent=c.REFER;$('cvd').textContent=c.CVD;$('hpht').textContent=c.HPHT;
  $('rows').innerHTML=a.slice().reverse().map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.vendor)}</td><td>${esc(r.po)}</td><td>${esc(r.barcode)}</td><td><span class="badge">${r.type}</span></td><td><button class="danger" onclick="removeRec(${r.id})">✕</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No records</td></tr>';
- $('vendors').innerHTML=[...new Set(records.map(r=>r.vendor))].sort().map(v=>`<option value="${esc(v)}">`).join('');
+ renderVendors();
 }
 function removeRec(id){if(confirm('Delete this record?')){records=records.filter(r=>r.id!==id);localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));render()}}
 function exportCSV(){
