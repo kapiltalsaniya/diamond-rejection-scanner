@@ -94,7 +94,12 @@ function getVendors(){try{return JSON.parse(localStorage.getItem(VKEY)||'[]')}ca
 function setVendors(v){v=[...new Set(v.map(x=>String(x).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));localStorage.setItem(VKEY,JSON.stringify(v));renderVendors()}
 function renderVendors(){const all=[...new Set([...getVendors(),...records.map(r=>r.vendor).filter(Boolean)])].sort((a,b)=>a.localeCompare(b));$('vendors').innerHTML=all.map(v=>`<option value="${esc(v)}">`).join('')}
 function saveVendor(){const v=$('vendor').value.trim();if(!v){alert('Enter a vendor name first.');return}setVendors([...getVendors(),v]);alert('Vendor saved successfully. You can now select it from the list.')}
-function manageVendors(){const v=getVendors();if(!v.length){alert('No saved vendors are available.');return}const x=prompt('Saved vendors:\n'+v.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nEnter the exact vendor name to delete:');if(x&&v.includes(x.trim())){setVendors(v.filter(n=>n!==x.trim()));alert('Vendor deleted successfully.')}}
+function manageVendors(){
+ const v=getVendors();
+ if(!v.length){alert('No saved vendors are available.');return}
+ const x=prompt('Saved vendors:\n'+v.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nEnter the exact vendor name to delete:');
+ if(x&&v.includes(x.trim())){setVendors(v.filter(n=>n!==x.trim()));alert('Vendor deleted successfully.')}
+}
 
 function countsOf(r){
  if(r.counts) return {REFER:Number(r.counts.REFER)||0,CVD:Number(r.counts.CVD)||0,HPHT:Number(r.counts.HPHT)||0};
