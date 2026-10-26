@@ -46,9 +46,14 @@ table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:7px 5px;b
 </section>
 
 <section class="card">
-<h3 style="margin:0 0 9px">2. Rejection Type</h3>
-<div class="types"><button id="referBtn" onclick="pick('REFER')">REFER</button><button id="cvdBtn" onclick="pick('CVD')">CVD</button><button id="hphtBtn" onclick="pick('HPHT')">HPHT</button></div>
-<div style="height:9px"></div><button class="primary" style="width:100%" onclick="save()">💾 Save Rejection</button>
+<h3 style="margin:0 0 9px">2. Rejection Counts for This Product</h3>
+<p class="notice">Ek hi product/barcode mein jitne REFER, CVD aur HPHT milein, unke counts alag-alag enter karein. Jo type nahi mila, uska count 0 rakhein.</p>
+<div class="grid">
+<div><label>REFER Count</label><input id="referCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+<div><label>CVD Count</label><input id="cvdCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+<div><label>HPHT Count</label><input id="hphtCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+</div>
+<div style="height:9px"></div><button class="primary" style="width:100%" onclick="save()">💾 Save Product Counts</button>
 </section>
 
 <section class="card">
@@ -62,53 +67,70 @@ table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:7px 5px;b
 </section>
 
 <section class="card"><h3 style="margin:0 0 8px">📋 Saved Records</h3>
-<div class="scroll"><table><thead><tr><th>Date</th><th>Vendor</th><th>PO</th><th>Barcode</th><th>Type</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<div class="scroll"><table><thead><tr><th>Date</th><th>Vendor</th><th>PO</th><th>Barcode</th><th>REFER</th><th>CVD</th><th>HPHT</th><th>Total</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></section>
 </main>
 <script>
 let records=JSON.parse(localStorage.getItem('diamondRejectionCamera')||'[]');
-let selected='',stream=null,track=null,detector=null,scanBusy=false,torch=false;
-const $=id=>document.getElementById(id); $('date').value=new Date().toISOString().slice(0,10); renderVendors();
+let stream=null,track=null,detector=null,scanBusy=false,torch=false;
+const $=id=>document.getElementById(id); $('date').value=new Date().toISOString().slice(0,10);
 
 const VKEY='diamondSavedVendors';
 function getVendors(){try{return JSON.parse(localStorage.getItem(VKEY)||'[]')}catch(e){return[]}}
 function setVendors(v){v=[...new Set(v.map(x=>String(x).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));localStorage.setItem(VKEY,JSON.stringify(v));renderVendors()}
 function renderVendors(){const all=[...new Set([...getVendors(),...records.map(r=>r.vendor).filter(Boolean)])].sort((a,b)=>a.localeCompare(b));$('vendors').innerHTML=all.map(v=>`<option value="${esc(v)}">`).join('')}
 function saveVendor(){const v=$('vendor').value.trim();if(!v){alert('Pehle vendor name enter karo.');return}setVendors([...getVendors(),v]);alert('Vendor save ho gaya. Ab dropdown se select kar sakte ho.')}
-function manageVendors(){const v=getVendors();if(!v.length){alert('Koi manually saved vendor nahi hai.');return}const x=prompt('Saved vendors:
+function manageVendors(){const v=getVendors();if(!v.length){alert('Koi manually saved vendor nahi hai.');return}const x=prompt('Saved vendors:\n'+v.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nDelete karne ke liye exact vendor name enter karo:');if(x&&v.includes(x.trim())){setVendors(v.filter(n=>n!==x.trim()));alert('Vendor delete ho gaya.')}}
 
-'+v.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nDelete karne ke liye exact vendor name enter karo:');if(x&&v.includes(x.trim())){setVendors(v.filter(n=>n!==x.trim()));alert('Vendor delete ho gaya.')}}
-
-function pick(t){selected=t;['REFER','CVD','HPHT'].forEach(x=>$(x==='REFER'?'referBtn':x==='CVD'?'cvdBtn':'hphtBtn').classList.remove('sel'));$(t==='REFER'?'referBtn':t==='CVD'?'cvdBtn':'hphtBtn').classList.add('sel')}
+function countsOf(r){
+ if(r.counts) return {REFER:Number(r.counts.REFER)||0,CVD:Number(r.counts.CVD)||0,HPHT:Number(r.counts.HPHT)||0};
+ return {REFER:r.type==='REFER'?1:0,CVD:r.type==='CVD'?1:0,HPHT:r.type==='HPHT'?1:0};
+}
 function save(){
  const vendor=$('vendor').value.trim(),po=$('po').value.trim(),barcode=$('barcode').value.trim(),date=$('date').value;
- if(!vendor||!po||!barcode||!date||!selected){alert('Vendor, PO, Barcode, Date aur Rejection Type complete karo.');return}
- const dup=records.some(r=>r.vendor.toLowerCase()===vendor.toLowerCase()&&r.po===po&&r.barcode===barcode);
- if(dup&&!confirm('Same Vendor + PO + Barcode already saved hai. Phir bhi save karein?'))return;
- records.push({id:Date.now(),date,vendor,po,barcode,type:selected});
+ const counts={REFER:Math.max(0,parseInt($('referCount').value,10)||0),CVD:Math.max(0,parseInt($('cvdCount').value,10)||0),HPHT:Math.max(0,parseInt($('hphtCount').value,10)||0)};
+ const total=counts.REFER+counts.CVD+counts.HPHT;
+ if(!vendor||!po||!barcode||!date){alert('Vendor, PO, Barcode aur Date complete karo.');return}
+ if(total===0){alert('Kam se kam ek count 1 ya usse zyada enter karo.');return}
+ const existing=records.find(r=>r.vendor.toLowerCase()===vendor.toLowerCase()&&String(r.po)===po&&String(r.barcode)===barcode);
+ if(existing){
+   if(!confirm('Same Vendor + PO + Barcode already saved hai. Is product ke counts mein add karna hai? Cancel karne par naya record save hoga.')) {
+     records.push({id:Date.now(),date,vendor,po,barcode,counts});
+   } else {
+     const old=countsOf(existing);
+     existing.counts={REFER:old.REFER+counts.REFER,CVD:old.CVD+counts.CVD,HPHT:old.HPHT+counts.HPHT};
+     existing.date=date;
+   }
+ } else {
+   records.push({id:Date.now(),date,vendor,po,barcode,counts});
+ }
  localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));
- $('barcode').value='';pickClear();render();
+ $('barcode').value='';$('referCount').value=0;$('cvdCount').value=0;$('hphtCount').value=0;render();
+ alert('Product ke rejection counts save ho gaye.');
 }
-function pickClear(){selected='';['referBtn','cvdBtn','hphtBtn'].forEach(id=>$(id).classList.remove('sel'))}
 function render(){
  const q=$('search').value.toLowerCase().trim(),f=$('filter').value;
- const a=records.filter(r=>(!q||[r.vendor,r.po,r.barcode,r.type].some(v=>String(v).toLowerCase().includes(q)))&&(f==='ALL'||r.type===f));
- let c={REFER:0,CVD:0,HPHT:0};a.forEach(r=>c[r.type]++);
- $('total').textContent=a.length;$('refer').textContent=c.REFER;$('cvd').textContent=c.CVD;$('hpht').textContent=c.HPHT;
- $('rows').innerHTML=a.slice().reverse().map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.vendor)}</td><td>${esc(r.po)}</td><td>${esc(r.barcode)}</td><td><span class="badge">${r.type}</span></td><td><button class="danger" onclick="removeRec(${r.id})">✕</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No records</td></tr>';
+ const a=records.filter(r=>{
+   const c=countsOf(r);
+   const typeMatch=f==='ALL'||c[f]>0;
+   return (!q||[r.vendor,r.po,r.barcode].some(v=>String(v).toLowerCase().includes(q)))&&typeMatch;
+ });
+ let c={REFER:0,CVD:0,HPHT:0};a.forEach(r=>{const n=countsOf(r);c.REFER+=n.REFER;c.CVD+=n.CVD;c.HPHT+=n.HPHT});
+ $('total').textContent=c.REFER+c.CVD+c.HPHT;$('refer').textContent=c.REFER;$('cvd').textContent=c.CVD;$('hpht').textContent=c.HPHT;
+ $('rows').innerHTML=a.slice().reverse().map(r=>{const n=countsOf(r),tot=n.REFER+n.CVD+n.HPHT;return `<tr><td>${esc(r.date)}</td><td>${esc(r.vendor)}</td><td>${esc(r.po)}</td><td>${esc(r.barcode)}</td><td>${n.REFER}</td><td>${n.CVD}</td><td>${n.HPHT}</td><td>${tot}</td><td><button class="danger" onclick="removeRec(${r.id})">✕</button></td></tr>`}).join('')||'<tr><td colspan="9" class="empty">No records</td></tr>';
  renderVendors();
 }
-function removeRec(id){if(confirm('Delete this record?')){records=records.filter(r=>r.id!==id);localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));render()}}
+function removeRec(id){if(confirm('Delete this product record?')){records=records.filter(r=>r.id!==id);localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));render()}}
 function exportExcel(){
  if(!records.length){alert('No data to export');return}
- const rows=[['Date','Vendor','PO Number','Barcode','Rejection Type'],...records.map(r=>[r.date,r.vendor,r.po,r.barcode,r.type])];
+ const rows=[['Date','Vendor','PO Number','Barcode','REFER Count','CVD Count','HPHT Count','Total Rejections'],...records.map(r=>{const c=countsOf(r);return [r.date,r.vendor,r.po,r.barcode,c.REFER,c.CVD,c.HPHT,c.REFER+c.CVD+c.HPHT]})];
  const escX=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');
- const table='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px;text-align:left}th{font-weight:bold;background:#e8eef7}td{mso-number-format:"\@"}</style></head><body><table>'+rows.map((r,i)=>'<tr>'+r.map(v=>(i===0?'<th>':'<td>')+escX(v)+(i===0?'</th>':'</td>')).join('')+'</tr>').join('')+'</table></body></html>';
+ const table='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px;text-align:left}th{font-weight:bold;background:#e8eef7}td{mso-number-format:"\\@"}</style></head><body><table>'+rows.map((r,i)=>'<tr>'+r.map(v=>(i===0?'<th>':'<td>')+escX(v)+(i===0?'</th>':'</td>')).join('')+'</tr>').join('')+'</table></body></html>';
  const blob=new Blob(['\ufeff'+table],{type:'application/vnd.ms-excel'});
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function exportCSV(){
  if(!records.length){alert('No data to export');return}
- const rows=[['Date','Vendor','PO Number','Barcode','Rejection Type'],...records.map(r=>[r.date,r.vendor,r.po,r.barcode,r.type])];
+ const rows=[['Date','Vendor','PO Number','Barcode','REFER Count','CVD Count','HPHT Count','Total Rejections'],...records.map(r=>{const c=countsOf(r);return [r.date,r.vendor,r.po,r.barcode,c.REFER,c.CVD,c.HPHT,c.REFER+c.CVD+c.HPHT]})];
  const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\r\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'}));a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
