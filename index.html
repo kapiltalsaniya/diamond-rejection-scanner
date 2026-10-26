@@ -3,182 +3,339 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111827">
-<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#132238">
+<meta name="description" content="Diamond Rejection Scanner and Vendor Report">
+<link rel="manifest" href="./manifest.webmanifest">
 <title>Diamond Rejection Scanner</title>
 <style>
-
+:root{--navy:#132238;--navy2:#203b5e;--blue:#245fe5;--bg:#f3f6fb;--card:#fff;--text:#172033;--muted:#667085;--line:#dbe3ed;--green:#12805c;--red:#b42318;--amber:#a15c00}
 *{box-sizing:border-box}
-:root{--navy:#132238;--navy2:#1c3553;--blue:#2463eb;--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--border:#dce3ed;--green:#16845b;--red:#b42318}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;font-size:14px;line-height:1.45}
-header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:18px 16px;position:sticky;top:0;z-index:10;box-shadow:0 4px 18px #10233b22}
-header h1{margin:0;font-size:21px;font-weight:750;letter-spacing:.1px}
-.sub{font-size:12px;opacity:.82;margin-top:4px;letter-spacing:.2px}
-main{max-width:980px;margin:0 auto;padding:18px 14px 32px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:17px;margin-bottom:15px;box-shadow:0 3px 12px #152c4b08}
-h3{font-size:16px;font-weight:750;margin:0 0 12px;color:var(--navy)}
-label{display:block;font-size:12px;font-weight:700;color:#475467;margin:9px 0 5px}
-input,select,button{font:inherit}
-input,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:var(--text);outline:none}
-input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2463eb18}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.row{display:flex;gap:9px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
-button{border:1px solid transparent;border-radius:10px;padding:11px 13px;font-weight:700;cursor:pointer;transition:filter .15s,transform .05s}
-button:active{transform:translateY(1px)}
-.primary{background:var(--blue);color:#fff}.primary:hover{filter:brightness(.94)}
-.secondary{background:#eef2f7;color:#23344d;border-color:#d9e1eb}.danger{background:#fff1f0;color:var(--red);border-color:#ffd2cc}
-.types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.types button{background:#eef2f7}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,Roboto,"Segoe UI",Arial,sans-serif}
+header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:18px 16px;box-shadow:0 4px 16px #10233b1c}
+.header-inner{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:21px;margin:0;font-weight:800;letter-spacing:.1px}.subtitle{font-size:12px;opacity:.82;margin-top:4px}
+.header-badge{border:1px solid #ffffff45;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;white-space:nowrap}
+main{max-width:1100px;margin:auto;padding:18px 14px 36px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:17px;margin-bottom:15px;box-shadow:0 3px 12px #152c4b07}
+h2{font-size:16px;margin:0 0 12px;color:var(--navy)}.section-desc{font-size:12px;color:var(--muted);margin:-5px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+label{display:block;font-size:12px;font-weight:750;color:#475467;margin:8px 0 5px}
+input,select,button{font:inherit}input,select{width:100%;min-height:43px;padding:10px 11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #245fe51a}
+button{min-height:40px;border:1px solid transparent;border-radius:9px;padding:9px 12px;font-weight:750;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}.primary{background:var(--blue);color:#fff}.secondary{background:#eef2f7;color:#253750;border-color:#d9e1eb}.success{background:#e8f7f0;color:#086746;border-color:#b6e5d1}.danger{background:#fff1f0;color:var(--red);border-color:#ffd3ce}.small{min-height:32px;padding:6px 9px;font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions>*{flex:1}
+.inline-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.inline-actions button{flex:0 0 auto}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:15px}
-.stat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:13px;text-align:center;box-shadow:0 3px 12px #152c4b08}
-.stat b{display:block;font-size:25px;line-height:1.25;color:var(--navy)}.stat span{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:5px}
-table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px 8px;border-bottom:1px solid #e8edf3;text-align:left;white-space:nowrap}th{font-size:10px;color:#667085;text-transform:uppercase;letter-spacing:.5px;background:#f8fafc}
-.scroll{overflow:auto;border:1px solid var(--border);border-radius:10px}.empty{text-align:center;padding:20px;color:var(--muted)}
-.badge{padding:4px 7px;border-radius:999px;background:#edf2f7;font-size:10px;font-weight:700}.notice{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0 10px}
-@media(max-width:560px){main{padding:12px 10px 24px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:14px}header h1{font-size:19px}}
-
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px;text-align:center;box-shadow:0 3px 12px #152c4b07}
+.stat strong{display:block;font-size:25px;line-height:1.2;color:var(--navy)}.stat span{display:block;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:5px}
+.type-stat:nth-child(2) strong{color:#9b4b00}.type-stat:nth-child(3) strong{color:#245fe5}.type-stat:nth-child(4) strong{color:#7a3db8}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0;line-height:1.5}.status{padding:10px 12px;border-radius:9px;font-size:12px;margin-top:10px;display:none;overflow-wrap:anywhere}.status.show{display:block}.status.info{background:#edf4ff;color:#204b99}.status.error{background:#fff0ef;color:#9e1c14}.status.ok{background:#e9f8f0;color:#086746}
+.scan-panel{display:none;margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0b1220}.scan-panel.active{display:block}video{width:100%;max-height:380px;object-fit:cover;display:block;background:#080d15}.scan-controls{display:flex;gap:8px;padding:10px;background:#111b2b}.scan-controls button{flex:1}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px 9px;border-bottom:1px solid #e8edf3;text-align:left;white-space:nowrap}th{font-size:10px;color:#667085;text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;position:sticky;top:0}tbody tr:last-child td{border-bottom:0}.empty{text-align:center;padding:24px;color:var(--muted)}
+.pill{display:inline-block;padding:3px 7px;border-radius:999px;background:#edf2f7;font-size:10px;font-weight:800}
+.footer{font-size:11px;color:var(--muted);text-align:center;padding:12px}
+@media(max-width:620px){main{padding:12px 10px 28px}.card{padding:14px}.grid,.grid.three{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:19px}.header-badge{font-size:10px;padding:5px 8px}.actions>*{flex:1 1 100%}}
 </style>
 </head>
 <body>
-<header><h1>💎 Diamond Rejection Scanner</h1><div class="sub">Barcode-based diamond rejection tracking</div></header>
+<header><div class="header-inner"><div><h1>Diamond Rejection Scanner</h1><div class="subtitle">Vendor tracking · Barcode scanning · Rejection analytics</div></div><span class="header-badge">LOCAL DATA</span></div></header>
 <main>
-<div class="stats"><div class="stat"><b id="total">0</b><span>Total</span></div><div class="stat"><b id="refer">0</b><span>REFER</span></div><div class="stat"><b id="cvd">0</b><span>CVD</span></div><div class="stat"><b id="hpht">0</b><span>HPHT</span></div></div>
+  <section class="stats" aria-label="Rejection summary">
+    <div class="stat"><strong id="statProducts">0</strong><span>Products Logged</span></div>
+    <div class="stat type-stat"><strong id="statRefer">0</strong><span>REFER Count</span></div>
+    <div class="stat type-stat"><strong id="statCvd">0</strong><span>CVD Count</span></div>
+    <div class="stat type-stat"><strong id="statHpht">0</strong><span>HPHT Count</span></div>
+  </section>
 
-<section class="card">
-<h3 style="margin:0 0 10px">1. Product Details</h3>
-<div class="grid">
-<div><label>Vendor Name</label><input id="vendor" list="vendors" placeholder="Enter vendor name"><datalist id="vendors"></datalist><div style="display:flex;gap:8px;margin-top:6px"><button type="button" onclick="saveVendor()">＋ Save Vendor</button><button type="button" onclick="manageVendors()">Manage Vendors</button></div></div>
-<div><label>PO Number</label><input id="po" placeholder="Enter PO number"></div>
-<div><label>Barcode</label><input id="barcode" inputmode="numeric" autocomplete="off" placeholder="Enter or scan barcode"></div>
-<div><label>Date</label><input id="date" type="date"></div>
-</div>
-<div style="height:8px"></div>
-<button class="primary" style="width:100%;font-size:16px" onclick="openScanner()">📷 Scan Barcode</button>
-<div id="scannerBox">
-<video id="video" playsinline muted></video><div class="scanLine"></div>
-<div class="scanControls"><button onclick="toggleTorch()">🔦 Torch</button><button onclick="closeScanner()">✖ Close</button></div>
-</div>
-<p class="notice">Camera access requires HTTPS. Allow camera permission when prompted by your browser.</p>
-</section>
+  <section class="card">
+    <h2>1. Product Details</h2>
+    <p class="section-desc">Select a saved vendor or enter a new vendor name.</p>
+    <div class="grid">
+      <div><label for="vendor">Vendor Name *</label><input id="vendor" list="vendorOptions" placeholder="Select or enter vendor" autocomplete="off"><datalist id="vendorOptions"></datalist></div>
+      <div><label for="po">PO Number *</label><input id="po" placeholder="Enter PO number" autocomplete="off"></div>
+      <div><label for="barcode">Barcode *</label><input id="barcode" placeholder="Scan or enter barcode" autocomplete="off" inputmode="text"></div>
+      <div><label for="date">Date *</label><input id="date" type="date"></div>
+    </div>
+    <div class="inline-actions">
+      <button class="secondary" id="saveVendorBtn" type="button">＋ Save Vendor</button>
+      <button class="secondary" id="manageVendorBtn" type="button">Manage Vendors</button>
+      <button class="primary" id="openScannerBtn" type="button">📷 Scan Barcode</button>
+    </div>
+    <div id="scannerPanel" class="scan-panel">
+      <video id="cameraVideo" playsinline muted></video>
+      <div class="scan-controls"><button id="torchBtn" class="secondary" type="button">Torch</button><button id="stopScannerBtn" class="danger" type="button">Stop Camera</button></div>
+    </div>
+    <div id="cameraStatus" class="status" role="status"></div>
+    <p class="note">Camera scanning requires HTTPS and a browser with barcode detection support. You can also type a barcode manually.</p>
+  </section>
 
-<section class="card">
-<h3 style="margin:0 0 9px">2. Rejection Counts</h3>
-<p class="notice">Enter the individual count for each rejection type found on this product. Use 0 for types not found.</p>
-<div class="grid">
-<div><label>REFER Count</label><input id="referCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
-<div><label>CVD Count</label><input id="cvdCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
-<div><label>HPHT Count</label><input id="hphtCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
-</div>
-<div style="height:9px"></div><button class="primary" style="width:100%" onclick="save()">💾 Save Product Counts</button>
-</section>
+  <section class="card">
+    <h2>2. Rejection Counts</h2>
+    <p class="section-desc">Enter each type found on this product. Set a type to 0 if none were found.</p>
+    <div class="grid three">
+      <div><label for="referCount">REFER Count</label><input id="referCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+      <div><label for="cvdCount">CVD Count</label><input id="cvdCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+      <div><label for="hphtCount">HPHT Count</label><input id="hphtCount" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="actions"><button id="saveRecordBtn" class="primary" type="button">Save Product Counts</button><button id="clearFormBtn" class="secondary" type="button">Clear Form</button></div>
+    <div id="formStatus" class="status" role="status"></div>
+  </section>
 
-<section class="card">
-<h3 style="margin:0 0 8px">📊 Search records / Export</h3>
-<div class="grid">
-<div><label>Search records vendor, PO number, or barcode</label><input id="search" oninput="render()" placeholder="Search records"></div>
-<div><label>Type</label><select id="filter" onchange="render()"><option>ALL</option><option>REFER</option><option>CVD</option><option>HPHT</option></select></div>
-</div>
-<div style="height:8px"></div>
-<div class="row"><button class="secondary" onclick="exportExcel()">⬇️ Export to Excel</button><button class="secondary" onclick="exportCSV()">Export CSV</button><button class="secondary" onclick="backup()">💾 Backup Data</button></div>
-</section>
+  <section class="card">
+    <h2>3. Search & Export</h2>
+    <div class="grid">
+      <div><label for="searchInput">Search Vendor / PO / Barcode</label><input id="searchInput" placeholder="Type to search records"></div>
+      <div><label for="typeFilter">Filter by Rejection Type</label><select id="typeFilter"><option value="ALL">All Types</option><option value="REFER">REFER</option><option value="CVD">CVD</option><option value="HPHT">HPHT</option></select></div>
+      <div><label for="vendorFilter">Filter by Vendor</label><select id="vendorFilter"><option value="ALL">All Vendors</option></select></div>
+      <div><label for="dateFilter">Filter by Date</label><input id="dateFilter" type="date"></div>
+    </div>
+    <div class="actions">
+      <button id="exportExcelBtn" class="success" type="button">Export to Excel (.xls)</button>
+      <button id="exportCsvBtn" class="secondary" type="button">Export CSV</button>
+      <button id="backupBtn" class="secondary" type="button">Download Backup</button>
+      <button id="restoreBtn" class="secondary" type="button">Restore Backup</button>
+      <input id="restoreFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <p class="note">Excel export includes separate REFER, CVD and HPHT columns. Keep regular backups because records are stored in this browser on this device.</p>
+  </section>
 
-<section class="card"><h3 style="margin:0 0 8px">📋 Rejection Records</h3>
-<div class="scroll"><table><thead><tr><th>Date</th><th>Vendor</th><th>PO</th><th>Barcode</th><th>REFER</th><th>CVD</th><th>HPHT</th><th>Total</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></section>
+  <section class="card">
+    <h2>4. Rejection Records <span class="pill" id="recordCount">0 records</span></h2>
+    <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vendor</th><th>PO Number</th><th>Barcode</th><th>REFER</th><th>CVD</th><th>HPHT</th><th>Total</th><th>Action</th></tr></thead><tbody id="recordsBody"><tr><td colspan="9" class="empty">No records found.</td></tr></tbody></table></div>
+  </section>
+  <div class="footer">Diamond Rejection Scanner · Data stays in this browser unless exported or backed up.</div>
 </main>
 <script>
-let records=JSON.parse(localStorage.getItem('diamondRejectionCamera')||'[]');
-let stream=null,track=null,detector=null,scanBusy=false,torch=false;
-const $=id=>document.getElementById(id); $('date').value=new Date().toISOString().slice(0,10);
+(() => {
+"use strict";
+const DATA_KEY = "diamondRejectionCamera";
+const VENDOR_KEY = "diamondSavedVendors";
+const $ = id => document.getElementById(id);
+let records = [];
+let stream = null;
+let detector = null;
+let scanLoop = false;
+let torchOn = false;
+let videoTrack = null;
 
-const VKEY='diamondSavedVendors';
-function getVendors(){try{return JSON.parse(localStorage.getItem(VKEY)||'[]')}catch(e){return[]}}
-function setVendors(v){v=[...new Set(v.map(x=>String(x).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));localStorage.setItem(VKEY,JSON.stringify(v));renderVendors()}
-function renderVendors(){const all=[...new Set([...getVendors(),...records.map(r=>r.vendor).filter(Boolean)])].sort((a,b)=>a.localeCompare(b));$('vendors').innerHTML=all.map(v=>`<option value="${esc(v)}">`).join('')}
-function saveVendor(){const v=$('vendor').value.trim();if(!v){alert('Enter a vendor name first.');return}setVendors([...getVendors(),v]);alert('Vendor saved successfully. You can now select it from the list.')}
-function manageVendors(){
- const v=getVendors();
- if(!v.length){alert('No saved vendors are available.');return}
- const x=prompt('Saved vendors:\n'+v.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nEnter the exact vendor name to delete:');
- if(x&&v.includes(x.trim())){setVendors(v.filter(n=>n!==x.trim()));alert('Vendor deleted successfully.')}
+function showStatus(id, message, kind="info") {
+  const el = $(id); el.textContent = message; el.className = "status show " + kind;
 }
-
-function countsOf(r){
- if(r.counts) return {REFER:Number(r.counts.REFER)||0,CVD:Number(r.counts.CVD)||0,HPHT:Number(r.counts.HPHT)||0};
- return {REFER:r.type==='REFER'?1:0,CVD:r.type==='CVD'?1:0,HPHT:r.type==='HPHT'?1:0};
+function hideStatus(id) { const el=$(id); el.textContent=""; el.className="status"; }
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 }
-function save(){
- const vendor=$('vendor').value.trim(),po=$('po').value.trim(),barcode=$('barcode').value.trim(),date=$('date').value;
- const counts={REFER:Math.max(0,parseInt($('referCount').value,10)||0),CVD:Math.max(0,parseInt($('cvdCount').value,10)||0),HPHT:Math.max(0,parseInt($('hphtCount').value,10)||0)};
- const total=counts.REFER+counts.CVD+counts.HPHT;
- if(!vendor||!po||!barcode||!date){alert('Complete all required fields: Vendor, PO Number, Barcode, and Date.');return}
- if(total===0){alert('Enter at least one rejection count greater than zero.');return}
- const existing=records.find(r=>r.vendor.toLowerCase()===vendor.toLowerCase()&&String(r.po)===po&&String(r.barcode)===barcode);
- if(existing){
-   if(!confirm('A record with this Vendor, PO Number, and Barcode already exists. Select OK to add these counts to the existing record, or Cancel to create a separate record.')) {
-     records.push({id:Date.now(),date,vendor,po,barcode,counts});
-   } else {
-     const old=countsOf(existing);
-     existing.counts={REFER:old.REFER+counts.REFER,CVD:old.CVD+counts.CVD,HPHT:old.HPHT+counts.HPHT};
-     existing.date=date;
-   }
- } else {
-   records.push({id:Date.now(),date,vendor,po,barcode,counts});
- }
- localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));
- $('barcode').value='';$('referCount').value=0;$('cvdCount').value=0;$('hphtCount').value=0;render();
- alert('Product rejection counts saved successfully.');
+function getSavedVendors() {
+  try { const v=JSON.parse(localStorage.getItem(VENDOR_KEY)||"[]"); return Array.isArray(v)?v.filter(x=>typeof x==="string"):[]; } catch { return []; }
 }
-function render(){
- const q=$('search').value.toLowerCase().trim(),f=$('filter').value;
- const a=records.filter(r=>{
-   const c=countsOf(r);
-   const typeMatch=f==='ALL'||c[f]>0;
-   return (!q||[r.vendor,r.po,r.barcode].some(v=>String(v).toLowerCase().includes(q)))&&typeMatch;
- });
- let c={REFER:0,CVD:0,HPHT:0};a.forEach(r=>{const n=countsOf(r);c.REFER+=n.REFER;c.CVD+=n.CVD;c.HPHT+=n.HPHT});
- $('total').textContent=c.REFER+c.CVD+c.HPHT;$('refer').textContent=c.REFER;$('cvd').textContent=c.CVD;$('hpht').textContent=c.HPHT;
- $('rows').innerHTML=a.slice().reverse().map(r=>{const n=countsOf(r),tot=n.REFER+n.CVD+n.HPHT;return `<tr><td>${esc(r.date)}</td><td>${esc(r.vendor)}</td><td>${esc(r.po)}</td><td>${esc(r.barcode)}</td><td>${n.REFER}</td><td>${n.CVD}</td><td>${n.HPHT}</td><td>${tot}</td><td><button class="danger" onclick="removeRec(${r.id})">✕</button></td></tr>`}).join('')||'<tr><td colspan="9" class="empty">No records found</td></tr>';
- renderVendors();
+function saveSavedVendors(list) {
+  const clean=[...new Set(list.map(v=>String(v).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  localStorage.setItem(VENDOR_KEY, JSON.stringify(clean)); renderVendorOptions();
 }
-function removeRec(id){if(confirm('Delete this product record?')){records=records.filter(r=>r.id!==id);localStorage.setItem('diamondRejectionCamera',JSON.stringify(records));render()}}
-function exportExcel(){
- if(!records.length){alert('No data available to export.');return}
- const rows=[['Date','Vendor','PO Number','Barcode','REFER Count','CVD Count','HPHT Count','Total Rejections'],...records.map(r=>{const c=countsOf(r);return [r.date,r.vendor,r.po,r.barcode,c.REFER,c.CVD,c.HPHT,c.REFER+c.CVD+c.HPHT]})];
- const escX=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');
- const table='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px;text-align:left}th{font-weight:bold;background:#e8eef7}td{mso-number-format:"\\@"}</style></head><body><table>'+rows.map((r,i)=>'<tr>'+r.map(v=>(i===0?'<th>':'<td>')+escX(v)+(i===0?'</th>':'</td>')).join('')+'</tr>').join('')+'</table></body></html>';
- const blob=new Blob(['\ufeff'+table],{type:'application/vnd.ms-excel'});
- const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+function countsOf(r) {
+  if (r && r.counts && typeof r.counts==="object") return {REFER:Math.max(0,Number(r.counts.REFER)||0),CVD:Math.max(0,Number(r.counts.CVD)||0),HPHT:Math.max(0,Number(r.counts.HPHT)||0)};
+  return {REFER:r.type==="REFER"?1:0,CVD:r.type==="CVD"?1:0,HPHT:r.type==="HPHT"?1:0};
 }
-function exportCSV(){
- if(!records.length){alert('No data available to export.');return}
- const rows=[['Date','Vendor','PO Number','Barcode','REFER Count','CVD Count','HPHT Count','Total Rejections'],...records.map(r=>{const c=countsOf(r);return [r.date,r.vendor,r.po,r.barcode,c.REFER,c.CVD,c.HPHT,c.REFER+c.CVD+c.HPHT]})];
- const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\r\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'}));a.download='diamond_rejection_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+function normalizeRecord(r,i) {
+  return {id:r.id ?? (Date.now()+i),date:String(r.date||""),vendor:String(r.vendor||""),po:String(r.po ?? r.po_number ?? ""),barcode:String(r.barcode||""),counts:countsOf(r)};
 }
-function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(records,null,2)],{type:'application/json'}));a.download='diamond_rejection_backup.json';a.click()}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
-async function openScanner(){
- if(!window.isSecureContext){alert('Camera access requires HTTPS. Do not open this app directly from phone storage.');return}
- if(!navigator.mediaDevices?.getUserMedia){alert('Camera access is not available in this browser.');return}
- if(!('BarcodeDetector' in window)){alert('Barcode detection is not supported by this browser. Please use the latest version of Google Chrome.');return}
- try{
-  detector=new BarcodeDetector({formats:['code_128','code_39','ean_13','ean_8','upc_a','upc_e','qr_code']});
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
-  const v=$('video');v.srcObject=stream;$('scannerBox').style.display='block';await v.play();
-  track=stream.getVideoTracks()[0]; scanBusy=false; scanLoop();
- }catch(e){alert('Camera permission was denied. Check your browser's site settings and allow camera access.');closeScanner()}
+function loadData() {
+  try {
+    const raw=JSON.parse(localStorage.getItem(DATA_KEY)||"[]");
+    records=Array.isArray(raw)?raw.map(normalizeRecord):[];
+  } catch { records=[]; }
+  // Recover records from an earlier prototype key if present.
+  if (!records.length) {
+    for (const key of ["diamond_rejection_records","diamondRejectionRecords","rejectionRecords"]) {
+      try { const old=JSON.parse(localStorage.getItem(key)||"[]"); if(Array.isArray(old)&&old.length){records=old.map(normalizeRecord);break;} } catch {}
+    }
+  }
+  localStorage.setItem(DATA_KEY,JSON.stringify(records));
 }
-async function scanLoop(){
- if(!stream||scanBusy)return;
- try{scanBusy=true;const codes=await detector.detect($('video'));if(codes.length){$('barcode').value=codes[0].rawValue;navigator.vibrate?.(120);closeScanner();return}}catch(e){}finally{scanBusy=false}
- if(stream)requestAnimationFrame(scanLoop);
+function renderVendorOptions() {
+  const fromRecords=records.map(r=>r.vendor).filter(Boolean);
+  const vendors=[...new Set([...getSavedVendors(),...fromRecords])].sort((a,b)=>a.localeCompare(b));
+  $("vendorOptions").innerHTML=vendors.map(v=>`<option value="${escapeHtml(v)}"></option>`).join("");
+  const selected=$("vendorFilter").value;
+  $("vendorFilter").innerHTML='<option value="ALL">All Vendors</option>'+vendors.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+  if(vendors.includes(selected)) $("vendorFilter").value=selected;
 }
-async function toggleTorch(){
- if(!track)return;const caps=track.getCapabilities?.();if(!caps?.torch){alert('Torch control is not supported by this device or browser.');return}
- torch=!torch;try{await track.applyConstraints({advanced:[{torch}]})}catch(e){torch=!torch}
+function persist() { localStorage.setItem(DATA_KEY,JSON.stringify(records)); render(); }
+function addVendor() {
+  const vendor=$("vendor").value.trim();
+  if(!vendor){showStatus("formStatus","Enter a vendor name first.","error");return;}
+  saveSavedVendors([...getSavedVendors(),vendor]);
+  showStatus("formStatus","Vendor saved successfully.","ok");
 }
-function closeScanner(){if(stream){stream.getTracks().forEach(t=>t.stop())}stream=null;track=null;$('video').srcObject=null;$('scannerBox').style.display='none';torch=false}
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-render();
+function manageVendors() {
+  const vendors=getSavedVendors();
+  if(!vendors.length){showStatus("formStatus","No manually saved vendors to manage. Vendors already used in records remain available.","info");return;}
+  const answer=prompt("Saved vendors:\n\n"+vendors.map((v,i)=>`${i+1}. ${v}`).join("\n")+"\n\nEnter the exact vendor name to remove:");
+  if(answer===null||!answer.trim())return;
+  if(!vendors.includes(answer.trim())){showStatus("formStatus","Exact vendor name not found.","error");return;}
+  saveSavedVendors(vendors.filter(v=>v!==answer.trim()));
+  showStatus("formStatus","Saved vendor removed. Existing records were not deleted.","ok");
+}
+function clearForm() {
+  $("po").value="";$("barcode").value="";$("referCount").value="0";$("cvdCount").value="0";$("hphtCount").value="0";
+  $("date").value=new Date().toISOString().slice(0,10);hideStatus("formStatus");$("barcode").focus();
+}
+function saveRecord() {
+  const vendor=$("vendor").value.trim(),po=$("po").value.trim(),barcode=$("barcode").value.trim(),date=$("date").value;
+  const counts={REFER:Number($("referCount").value),CVD:Number($("cvdCount").value),HPHT:Number($("hphtCount").value)};
+  if(!vendor||!po||!barcode||!date){showStatus("formStatus","Complete Vendor Name, PO Number, Barcode and Date.","error");return;}
+  for(const k of Object.keys(counts)){if(!Number.isInteger(counts[k])||counts[k]<0){showStatus("formStatus",`${k} count must be a whole number of 0 or more.`,"error");return;}}
+  if(counts.REFER+counts.CVD+counts.HPHT===0){showStatus("formStatus","Enter at least one rejection count greater than zero.","error");return;}
+  const existing=records.find(r=>r.vendor.toLowerCase()===vendor.toLowerCase()&&r.po===po&&r.barcode===barcode);
+  if(existing) {
+    const merge=confirm("A record with this Vendor, PO Number and Barcode already exists.\n\nOK = Add counts to the existing record\nCancel = Save as a separate record");
+    if(merge){const old=countsOf(existing);existing.counts={REFER:old.REFER+counts.REFER,CVD:old.CVD+counts.CVD,HPHT:old.HPHT+counts.HPHT};existing.date=date;}
+    else records.push({id:Date.now(),date,vendor,po,barcode,counts});
+  } else records.push({id:Date.now(),date,vendor,po,barcode,counts});
+  saveSavedVendors([...getSavedVendors(),vendor]);
+  persist();clearForm();showStatus("formStatus","Product counts saved successfully.","ok");
+}
+function filteredRecords() {
+  const q=$("searchInput").value.trim().toLowerCase(),type=$("typeFilter").value,vendor=$("vendorFilter").value,date=$("dateFilter").value;
+  return records.filter(r=>{
+    const c=countsOf(r);
+    return (!q||[r.vendor,r.po,r.barcode].some(v=>String(v).toLowerCase().includes(q))) &&
+      (type==="ALL"||c[type]>0) && (vendor==="ALL"||r.vendor===vendor) && (!date||r.date===date);
+  }).sort((a,b)=>String(b.date).localeCompare(String(a.date))||Number(b.id)-Number(a.id));
+}
+function render() {
+  const filtered=filteredRecords();
+  const totals={REFER:0,CVD:0,HPHT:0};
+  records.forEach(r=>{const c=countsOf(r);totals.REFER+=c.REFER;totals.CVD+=c.CVD;totals.HPHT+=c.HPHT;});
+  $("statProducts").textContent=records.length;
+  $("statRefer").textContent=totals.REFER;$("statCvd").textContent=totals.CVD;$("statHpht").textContent=totals.HPHT;
+  $("recordCount").textContent=`${filtered.length} ${filtered.length===1?"record":"records"}`;
+  $("recordsBody").innerHTML=filtered.length?filtered.map(r=>{const c=countsOf(r),total=c.REFER+c.CVD+c.HPHT;return `<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.vendor)}</td><td>${escapeHtml(r.po)}</td><td>${escapeHtml(r.barcode)}</td><td>${c.REFER}</td><td>${c.CVD}</td><td>${c.HPHT}</td><td><strong>${total}</strong></td><td><button type="button" class="danger small" data-delete="${escapeHtml(r.id)}">Delete</button></td></tr>`;}).join(""):'<tr><td colspan="9" class="empty">No records found.</td></tr>';
+  renderVendorOptions();
+}
+function deleteRecord(id) {
+  if(!confirm("Delete this product record permanently from this browser?"))return;
+  records=records.filter(r=>String(r.id)!==String(id));persist();
+}
+function exportRows() {
+  return [["Date","Vendor","PO Number","Barcode","REFER Count","CVD Count","HPHT Count","Total Rejections"],...filteredRecords().map(r=>{const c=countsOf(r);return [r.date,r.vendor,r.po,r.barcode,c.REFER,c.CVD,c.HPHT,c.REFER+c.CVD+c.HPHT];})];
+}
+function exportExcel() {
+  const rows=exportRows();if(rows.length===1){showStatus("formStatus","No records available to export with the current filters.","error");return;}
+  const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/[\r\n]/g," ");
+  const table='<!doctype html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;font-family:Arial}th,td{border:1px solid #999;padding:6px}th{background:#dce7f5;font-weight:bold}</style></head><body><table>'+rows.map((row,i)=>'<tr>'+row.map(v=>(i===0?'<th>':'<td>')+esc(v)+(i===0?'</th>':'</td>')).join("")+'</tr>').join("")+'</table></body></html>';
+  downloadBlob(new Blob(["\ufeff",table],{type:"application/vnd.ms-excel;charset=utf-8"}),`diamond_rejection_${new Date().toISOString().slice(0,10)}.xls`);
+}
+function exportCsv() {
+  const rows=exportRows();if(rows.length===1){showStatus("formStatus","No records available to export with the current filters.","error");return;}
+  const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
+  downloadBlob(new Blob(["\ufeff",csv],{type:"text/csv;charset=utf-8"}),`diamond_rejection_${new Date().toISOString().slice(0,10)}.csv`);
+}
+function downloadBlob(blob,name) {
+  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function backup() {
+  const data={app:"Diamond Rejection Scanner",version:1,exportedAt:new Date().toISOString(),records,savedVendors:getSavedVendors()};
+  downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),`diamond_rejection_backup_${new Date().toISOString().slice(0,10)}.json`);
+}
+function restore(file) {
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try {
+      const data=JSON.parse(reader.result),incoming=Array.isArray(data)?data:data.records;
+      if(!Array.isArray(incoming))throw new Error("The selected file does not contain a valid records list.");
+      if(!confirm(`Restore ${incoming.length} records? This will replace the records currently stored in this browser.`))return;
+      records=incoming.map(normalizeRecord);
+      saveSavedVendors([...(data.savedVendors||[]),...records.map(r=>r.vendor)]);
+      persist();showStatus("formStatus","Backup restored successfully.","ok");
+    } catch(e){showStatus("formStatus",e.message||"Could not restore this backup file.","error");}
+    $("restoreFile").value="";
+  };
+  reader.onerror=()=>showStatus("formStatus","Unable to read the selected file.","error");
+  reader.readAsText(file);
+}
+async function startScanner() {
+  hideStatus("cameraStatus");
+  if(!window.isSecureContext){showStatus("cameraStatus","Camera access requires HTTPS. Open this app using its GitHub Pages HTTPS address.","error");return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){showStatus("cameraStatus","Camera access is not supported by this browser. Try the latest Chrome browser.","error");return;}
+  if(!("BarcodeDetector" in window)){showStatus("cameraStatus","This browser does not support built-in barcode detection. Use the latest Chrome on Android, or enter the barcode manually.","error");return;}
+  try {
+    detector=new BarcodeDetector();
+    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}});
+    $("cameraVideo").srcObject=stream;await $("cameraVideo").play();
+    videoTrack=stream.getVideoTracks()[0]||null;torchOn=false;$("scannerPanel").classList.add("active");
+    $("openScannerBtn").textContent="Camera Active";$("openScannerBtn").disabled=true;
+    showStatus("cameraStatus","Camera is active. Hold a barcode inside the camera view.","ok");
+    scanLoop=true;requestAnimationFrame(scanFrame);
+  } catch(e) {
+    stopScanner();
+    let msg="Unable to start camera.";
+    if(e.name==="NotAllowedError"||e.name==="PermissionDeniedError")msg="Camera permission was denied. Allow Camera in Chrome site settings, then reload this page.";
+    else if(e.name==="NotFoundError")msg="No camera was found on this device.";
+    else if(e.name==="NotReadableError")msg="Camera is busy in another app. Close other camera apps and try again.";
+    showStatus("cameraStatus",msg+" ("+(e.name||"Error")+")","error");
+  }
+}
+async function scanFrame() {
+  if(!scanLoop||!detector)return;
+  const video=$("cameraVideo");
+  if(video.readyState>=2&&video.videoWidth) {
+    try {
+      const hits=await detector.detect(video);
+      if(hits&&hits.length&&hits[0].rawValue) {
+        $("barcode").value=hits[0].rawValue;
+        if(navigator.vibrate)navigator.vibrate(100);
+        showStatus("cameraStatus","Barcode detected successfully.","ok");
+        stopScanner();$("referCount").focus();return;
+      }
+    } catch(e) {}
+  }
+  if(scanLoop)requestAnimationFrame(scanFrame);
+}
+async function toggleTorch() {
+  if(!videoTrack){showStatus("cameraStatus","Start the camera before using the torch.","info");return;}
+  try {
+    const caps=videoTrack.getCapabilities?videoTrack.getCapabilities():{};
+    if(!caps.torch){showStatus("cameraStatus","Torch is not supported by this device or browser.","info");return;}
+    torchOn=!torchOn;await videoTrack.applyConstraints({advanced:[{torch:torchOn}]});$("torchBtn").textContent=torchOn?"Turn Torch Off":"Turn Torch On";
+  } catch(e){showStatus("cameraStatus","Unable to change torch setting on this device.","error");}
+}
+function stopScanner() {
+  scanLoop=false;
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  videoTrack=null;$("cameraVideo").srcObject=null;$("scannerPanel").classList.remove("active");
+  $("openScannerBtn").textContent="📷 Scan Barcode";$("openScannerBtn").disabled=false;
+  $("torchBtn").textContent="Torch";
+}
+function init() {
+  $("date").value=new Date().toISOString().slice(0,10);
+  loadData();
+  $("saveVendorBtn").addEventListener("click",addVendor);
+  $("manageVendorBtn").addEventListener("click",manageVendors);
+  $("saveRecordBtn").addEventListener("click",saveRecord);
+  $("clearFormBtn").addEventListener("click",clearForm);
+  $("openScannerBtn").addEventListener("click",startScanner);
+  $("stopScannerBtn").addEventListener("click",stopScanner);
+  $("torchBtn").addEventListener("click",toggleTorch);
+  $("searchInput").addEventListener("input",render);
+  $("typeFilter").addEventListener("change",render);
+  $("vendorFilter").addEventListener("change",render);
+  $("dateFilter").addEventListener("change",render);
+  $("exportExcelBtn").addEventListener("click",exportExcel);
+  $("exportCsvBtn").addEventListener("click",exportCsv);
+  $("backupBtn").addEventListener("click",backup);
+  $("restoreBtn").addEventListener("click",()=>$("restoreFile").click());
+  $("restoreFile").addEventListener("change",e=>{if(e.target.files&&e.target.files[0])restore(e.target.files[0]);});
+  $("recordsBody").addEventListener("click",e=>{const btn=e.target.closest("[data-delete]");if(btn)deleteRecord(btn.getAttribute("data-delete"));});
+  window.addEventListener("pagehide",stopScanner);
+  render();
+  if("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  }
+}
+document.addEventListener("DOMContentLoaded",init);
+})();
 </script>
-</body></html>
+</body>
+</html>
